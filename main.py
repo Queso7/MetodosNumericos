@@ -1,5 +1,10 @@
-from metodos.Newton import newton
+from gui import App
+import tkinter as tk
 
-sistema = [...]  # Tus ecuaciones
-vector = [...]   # Valores iniciales
-solucion = newton(sistema, vector)
+def main():
+    root = tk.Tk()
+    app = App(root)
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()
