@@ -112,7 +112,7 @@ class PortadaFrame(ctk.CTkFrame):
 
         self.subtitle_label = ctk.CTkLabel(
             inner_frame,
-            text="Integrantes:\nCocio Placencia Grecia Paola\nHernández Salcedo Mesías Elohim",
+            text="Integrantes:\nCosio Placencia Grecia Paola\nHernández Salcedo Mesías Elohim\n Ramírez Martínez Jessica",
             font=("Arial", 18),
             text_color="#4682B4" # UNAM Blue-ish
         )
