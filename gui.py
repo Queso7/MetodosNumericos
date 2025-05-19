@@ -653,25 +653,22 @@ class SistemasFrame(BaseMethodFrame):
 class InterpolacionFrame(BaseMethodFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, controller, "Interpolación y Aproximación")
-        # Configure content_frame rows for Interpolation frame
-        self.content_frame.grid_rowconfigure(4, weight=1) # Row for plot
-        self.content_frame.grid_rowconfigure(5, weight=1) # Row for results
-
-        # Frame para controles (Add point, Clear data)
+        self.content_frame.grid_rowconfigure(2, weight=1)
+        self.content_frame.grid_columnconfigure(0, weight=1)
+        
+        # Frame para controles
         self.controls_frame = ctk.CTkFrame(self.content_frame)
         self.controls_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
-        self.controls_frame.grid_columnconfigure((1,3), weight=1) # Allow x and y entries to expand
-
-
+        
         # Entradas para puntos
         ctk.CTkLabel(self.controls_frame, text="X:", font=("Arial", 14)).grid(row=0, column=0, padx=5)
         self.x_entry = ctk.CTkEntry(self.controls_frame, width=100)
-        self.x_entry.grid(row=0, column=1, padx=5, sticky="ew")
-
+        self.x_entry.grid(row=0, column=1, padx=5)
+        
         ctk.CTkLabel(self.controls_frame, text="Y:", font=("Arial", 14)).grid(row=0, column=2, padx=5)
         self.y_entry = ctk.CTkEntry(self.controls_frame, width=100)
-        self.y_entry.grid(row=0, column=3, padx=5, sticky="ew")
-
+        self.y_entry.grid(row=0, column=3, padx=5)
+        
         self.add_button = ctk.CTkButton(
             self.controls_frame,
             text="Agregar punto",
@@ -681,7 +678,7 @@ class InterpolacionFrame(BaseMethodFrame):
             font=("Arial", 14)
         )
         self.add_button.grid(row=0, column=4, padx=5)
-
+        
         self.clear_button = ctk.CTkButton(
             self.controls_frame,
             text="Limpiar datos",
@@ -691,13 +688,11 @@ class InterpolacionFrame(BaseMethodFrame):
             font=("Arial", 14)
         )
         self.clear_button.grid(row=0, column=5, padx=5)
-
-        # Frame para selección de método y cálculo
+        
+        # Frame para selección de método
         self.method_frame = ctk.CTkFrame(self.content_frame)
         self.method_frame.grid(row=1, column=0, sticky="ew", padx=10, pady=10)
-        self.method_frame.grid_columnconfigure(1, weight=1) # Allow method combobox to expand
-
-
+        
         ctk.CTkLabel(self.method_frame, text="Método:", font=("Arial", 14)).grid(row=0, column=0, padx=5)
         self.method_combobox = ctk.CTkComboBox(
             self.method_frame,
@@ -705,15 +700,8 @@ class InterpolacionFrame(BaseMethodFrame):
             width=200,
             font=("Arial", 14)
         )
-        self.method_combobox.grid(row=0, column=1, padx=5, sticky="ew")
-        self.method_combobox.bind("<<ComboboxSelected>>", self.on_method_change) # Bind event to show/hide degree input
-
-        # Entry for polynomial degree (only for Minimos Cuadrados)
-        self.degree_label = ctk.CTkLabel(self.method_frame, text="Grado:", font=("Arial", 14))
-        self.degree_entry = ctk.CTkEntry(self.method_frame, width=50)
-        self.degree_entry.insert(0, "2") # Default degree
-
-
+        self.method_combobox.grid(row=0, column=1, padx=5)
+        
         self.interpolate_button = ctk.CTkButton(
             self.method_frame,
             text="Calcular",
@@ -722,437 +710,206 @@ class InterpolacionFrame(BaseMethodFrame):
             font=("Arial", 14)
         )
         self.interpolate_button.grid(row=0, column=2, padx=10)
-
-
-        # Frame para evaluación de polinomio
-        self.evaluation_frame = ctk.CTkFrame(self.content_frame)
-        self.evaluation_frame.grid(row=2, column=0, sticky="ew", padx=10, pady=10)
-        self.evaluation_frame.grid_columnconfigure(1, weight=1) # Allow eval entry to expand
-
-
-        ctk.CTkLabel(self.evaluation_frame, text="Evaluar en x:", font=("Arial", 14)).grid(row=0, column=0, padx=5)
-        self.eval_x_entry = ctk.CTkEntry(self.evaluation_frame, width=100)
-        self.eval_x_entry.grid(row=0, column=1, padx=5, sticky="ew")
-
-        self.evaluate_button = ctk.CTkButton(
-            self.evaluation_frame,
-            text="Evaluar",
-            command=self.evaluate_polynomial,
-            width=100,
-            fg_color="#FFA500", # Orange
-            font=("Arial", 14)
-        )
-        self.evaluate_button.grid(row=0, column=2, padx=10)
-
-
+        
         # Frame para tabla de puntos
-        # Increased height for better visibility
         self.table_frame = ctk.CTkScrollableFrame(self.content_frame, height=150)
-        self.table_frame.grid(row=3, column=0, sticky="nsew", padx=10, pady=10)
-        # Make columns in table frame expandable
-        self.table_frame.grid_columnconfigure((0,1,2), weight=1)
-
-
+        self.table_frame.grid(row=2, column=0, sticky="nsew", padx=10, pady=10)
+        
+        # Frame para resultados
+        self.results_frame = ctk.CTkFrame(self.content_frame)
+        self.results_frame.grid(row=3, column=0, sticky="nsew", padx=10, pady=10)
+        
         # Frame para gráfica
         self.plot_frame = ctk.CTkFrame(self.content_frame)
         self.plot_frame.grid(row=4, column=0, sticky="nsew", padx=10, pady=10)
-
-
-        # Frame para resultados
-        self.results_frame = ctk.CTkFrame(self.content_frame)
-        self.results_frame.grid(row=5, column=0, sticky="nsew", padx=10, pady=10)
-
-
+        
         # Inicializar variables
         self.points = []
         self.headers = ["Índice", "X", "Y"]
         self.create_table_headers()
-        self.generated_polynomial_str = "" # To store the polynomial string
-
-        # Initial call to set up the degree input visibility
-        self.on_method_change(None)
-
-
-    def on_method_change(self, event):
-         # Show degree input only for Mínimos Cuadrados
-         if self.method_combobox.get() == "Mínimos Cuadrados":
-              self.degree_label.grid(row=0, column=3, padx=5, sticky="w")
-              self.degree_entry.grid(row=0, column=4, padx=5, sticky="w")
-         else:
-              self.degree_label.grid_forget()
-              self.degree_entry.grid_forget()
-
-
+    
     def create_table_headers(self):
-        # Clear existing headers if any
-        for widget in self.table_frame.winfo_children():
-            # Only destroy header labels if recreating headers
-            # For now, simpler to just clear the whole frame and recreate, but be mindful of performance with many points
-             widget.destroy()
-
         for col, header in enumerate(self.headers):
             ctk.CTkLabel(
                 self.table_frame,
                 text=header,
                 font=("Arial", 12, "bold"),
-                # width=100 # Let grid weight handle width
+                width=100
             ).grid(row=0, column=col, padx=5, pady=2, sticky="ew")
-
-
+    
     def add_point(self):
         try:
-            x_str = self.x_entry.get()
-            y_str = self.y_entry.get()
-
-            if not x_str or not y_str:
-                 self.show_result("Error: Ingresa valores para X e Y.", is_error=True)
-                 return
-
-            x = float(x_str)
-            y = float(y_str)
-
-            # Check for duplicate x-values for interpolation methods
-            method = self.method_combobox.get()
-            if method in ["Lagrange", "Diferencias Divididas (Newton)"] and any(p[0] == x for p in self.points):
-                 self.show_result(f"Error: El valor de X={x} ya existe. Los valores de X deben ser distintos para {method}.", is_error=True)
-                 return
-
+            x = float(self.x_entry.get())
+            y = float(self.y_entry.get())
+            
             self.points.append((x, y))
-            self.points.sort()  # Keep points sorted by x, important for some methods/plotting
+            self.points.sort()  # Ordenar por x para algunos métodos
             self.update_table()
-
+            
             self.x_entry.delete(0, "end")
             self.y_entry.delete(0, "end")
-
-            # Clear previous results and plot when adding a new point
-            self.show_result("")
-            self.clear_plot()
-            self.generated_polynomial_str = ""
-
-
+            
         except ValueError:
-            self.show_result("Error: Ingresa valores numéricos válidos para X e Y.", is_error=True)
-        except Exception as e:
-             self.show_result(f"Error al agregar punto: {str(e)}", is_error=True)
-
-
+            self.show_result("Error: Ingresa valores numéricos válidos", is_error=True)
+    
     def clear_data(self):
         self.points = []
         self.update_table()
         self.show_result("Datos limpiados")
         self.clear_plot()
-        self.generated_polynomial_str = "" # Clear stored polynomial
-        self.eval_x_entry.delete(0, "end") # Clear evaluation entry
-        self.degree_entry.insert(0, "2") # Reset default degree
-
-
+    
     def update_table(self):
-        # Clear table data rows (keep headers)
+        # Limpiar tabla (excepto encabezados)
         for widget in self.table_frame.winfo_children():
-            if widget.grid_info()["row"] > 0: # Check if row is greater than 0 (header row)
+            if widget.grid_info()["row"] > 0:
                 widget.destroy()
-
+        
         # Llenar tabla con puntos
         for idx, (x, y) in enumerate(self.points, start=1):
             ctk.CTkLabel(
                 self.table_frame,
                 text=str(idx),
-                # width=100 # Let grid weight handle width
-            ).grid(row=idx, column=0, padx=5, pady=2, sticky="ew")
-
+                width=100
+            ).grid(row=idx, column=0, padx=5, pady=2)
+            
             ctk.CTkLabel(
                 self.table_frame,
-                text=f"{x:.6f}".rstrip('0').rstrip('.'), # Format float for display
-                # width=100 # Let grid weight handle width
-            ).grid(row=idx, column=1, padx=5, pady=2, sticky="ew")
-
+                text=f"{x:.4f}",
+                width=100
+            ).grid(row=idx, column=1, padx=5, pady=2)
+            
             ctk.CTkLabel(
                 self.table_frame,
-                text=f"{y:.6f}".rstrip('0').rstrip('.'), # Format float for display
-                # width=100 # Let grid weight handle width
-            ).grid(row=idx, column=2, padx=5, pady=2, sticky="ew")
-
-
+                text=f"{y:.4f}",
+                width=100
+            ).grid(row=idx, column=2, padx=5, pady=2)
+    
     def calculate_interpolation(self):
         if len(self.points) < 2:
-            self.show_result("Se necesitan al menos 2 puntos", is_error=False)
-            self.generated_polynomial_str = ""
-            self.clear_plot()
+            self.show_result("Se necesitan al menos 2 puntos", is_error=True)
             return
-
+        
         method = self.method_combobox.get()
         x_values = [p[0] for p in self.points]
         y_values = [p[1] for p in self.points]
-
+        
         try:
             if method == "Lagrange":
-                # Call the actual Lagrange interpolation
-                # The function itself checks for duplicate x-values
+                from metodos.segunda_unidad import lagrange_interpolation
                 polynomial = lagrange_interpolation(x_values, y_values)
-                self.generated_polynomial_str = str(polynomial)
-                result_text = f"Polinomio de {method}:\n{self.generated_polynomial_str}"
-                self.plot_interpolation(x_values, y_values, method, self.generated_polynomial_str)
-
+                result_text = f"Polinomio de {method}:\n{polynomial}"
+                self.plot_interpolation(x_values, y_values, method, str(polynomial))
+            
             elif method == "Diferencias Divididas (Newton)":
-                # Call the actual Divided Differences interpolation
-                 # The function itself checks for duplicate x-values
-                coef, poly_str = diferencias_divididas(x_values, y_values)
-                self.generated_polynomial_str = poly_str
-                result_text = f"Coeficientes de {method}:\n[{', '.join(coef)}]\n\nPolinomio:\n{self.generated_polynomial_str}" # Format coefficients
-                self.plot_interpolation(x_values, y_values, method, self.generated_polynomial_str)
-
+                from metodos.segunda_unidad import diferencias_divididas
+                coef, poly = diferencias_divididas(x_values, y_values)
+                result_text = f"Coeficientes de {method}:\n{coef}\n\nPolinomio:\n{poly}"
+                self.plot_interpolation(x_values, y_values, method, str(poly))
+            
             elif method == "Mínimos Cuadrados":
-                if len(self.points) < 1: # Mínimos cuadrados can be done with 1 point (degree 0)
-                     self.show_result("Se necesita al menos 1 punto para Mínimos Cuadrados.", is_error=False)
-                     self.generated_polynomial_str = ""
-                     self.clear_plot()
-                     return
-
-                # Get polynomial degree from entry
-                try:
-                    degree_str = self.degree_entry.get()
-                    if not degree_str:
-                         # Default degree if entry is empty, but enforce valid range
-                         # For N points, max degree is N-1
-                         degree = len(self.points) - 1
-                         # Or enforce entry: raise ValueError("Debe ingresar un valor para el Grado del polinomio.")
-                         # Let's enforce valid input
-                         raise ValueError("Debe ingresar un valor entero no negativo para el Grado del polinomio.")
-
-                    degree = int(degree_str)
-                except ValueError as ve:
-                     # Catch both empty and non-integer input
-                     self.show_result(f"Error en el Grado: {str(ve)}", is_error=True)
-                     self.generated_polynomial_str = ""
-                     self.clear_plot()
-                     return
-
-
-                # Validate degree
-                if degree < 0:
-                     self.show_result("Error en el Grado: El grado del polinomio no puede ser negativo.", is_error=True)
-                     self.generated_polynomial_str = ""
-                     self.clear_plot()
-                     return
-                # The function minimos_cuadrados already checks if len(x_values) <= degree
-                # We'll rely on that check, but a redundant check here provides quicker feedback
-                if degree >= len(self.points):
-                     self.show_result(f"Error en el Grado: El grado del polinomio ({degree}) debe ser menor que el número de puntos ({len(self.points)}) para Mínimos Cuadrados.", is_error=True)
-                     self.generated_polynomial_str = ""
-                     self.clear_plot()
-                     return
-
-
-                # Call the actual Least Squares approximation
-                coef, poly_str = minimos_cuadrados(x_values, y_values, degree)
-                self.generated_polynomial_str = poly_str
-                result_text = f"Coeficientes ({method}, grado {degree}):\n[{', '.join(coef)}]\n\nPolinomio:\n{self.generated_polynomial_str}" # Format coefficients
-                self.plot_approximation(x_values, y_values, self.generated_polynomial_str)
-
-
+                from metodos.segunda_unidad import minimos_cuadrados
+                degree = min(3, len(self.points)-1)  # Grado máximo razonable
+                coef, poly = minimos_cuadrados(x_values, y_values, degree)
+                result_text = f"Coeficientes (grado {degree}):\n{coef}\n\nPolinomio:\n{poly}"
+                self.plot_approximation(x_values, y_values, poly)
+            
             self.show_result(result_text)
-
-        except ValueError as e:
-             # Catch ValueErrors from interpolation/approximation functions (e.g., duplicate x, division by zero)
-             self.show_result(f"Error de cálculo: {str(e)}", is_error=True)
-             self.generated_polynomial_str = ""
-             self.clear_plot()
+            
         except Exception as e:
-            # Catch any other unexpected errors during calculation
-            self.show_result(f"Error al calcular {method}: {type(e).__name__}: {str(e)}", is_error=True)
-            self.generated_polynomial_str = ""
-            self.clear_plot()
-
-
-    def evaluate_polynomial(self):
-        if not self.generated_polynomial_str:
-            self.show_result("Primero calcula un polinomio de interpolación o aproximación.", is_error=False)
-            return
-
-        try:
-            x_eval_str = self.eval_x_entry.get()
-            if not x_eval_str:
-                 self.show_result("Error: Ingresa un valor para evaluar el polinomio.", is_error=True)
-                 return
-
-            x_eval = float(x_eval_str)
-            # Use the shared evaluar_polinomio function from segunda_unidad
-            result = evaluar_polinomio(self.generated_polynomial_str, x_eval)
-            self.show_result(f"Evaluación del polinomio en x = {x_eval}:\nResultado = {result:.6f}")
-        except ValueError as ve:
-             # Catch ValueErrors from evaluar_polinomio (parsing or evaluation issues)
-             self.show_result(f"Error al evaluar el polinomio: {str(ve)}", is_error=True)
-        except Exception as e:
-            # Catch any other unexpected errors during evaluation
-            self.show_result(f"Error inesperado al evaluar el polinomio: {type(e).__name__}: {str(e)}", is_error=True)
-
-
+            self.show_result(f"Error en {method}: {str(e)}", is_error=True)
+    
     def show_result(self, message, is_error=False):
-        # Clear previous content first
         for widget in self.results_frame.winfo_children():
             widget.destroy()
-
-        # Use CTkTextbox for multiline output
+        
         textbox = ctk.CTkTextbox(
             self.results_frame,
-            wrap="word", # Wrap text at word boundaries
-            state="normal", # Enable editing temporarily to insert text
-            font=("Consolas", 12),
-            width=800, # Set a default width, adjust as needed
-            height=150 # Set a default height, adjust as needed
+            width=800,
+            height=150,
+            font=("Consolas", 12)
         )
-        textbox.pack(fill="both", expand=True, padx=5, pady=5) # Add padding
-
-
+        textbox.pack(fill="both", expand=True)
         textbox.insert("end", message)
-
+        textbox.configure(state="disabled")
+        
         if is_error:
             textbox.configure(text_color="red")
-        else:
-             textbox.configure(text_color="white") # Default text color
-
-        textbox.configure(state="disabled") # Disable editing after inserting text
-
-
+    
     def plot_interpolation(self, x_values, y_values, method, poly_str):
-        # Clear previous plot first
         for widget in self.plot_frame.winfo_children():
             widget.destroy()
-        # Close any existing plot figures from this frame
-        plt.close('all')
-
-
+        
         fig, ax = plt.subplots(figsize=(8, 5))
-
+        
         # Puntos originales
         ax.scatter(x_values, y_values, color='red', label='Puntos dados', zorder=5)
-
+        
         # Polinomio interpolante
-        if x_values: # Only attempt to plot if there are points
-            x_min, x_max = min(x_values), max(x_values)
-            # Determine plot range, adding padding
-            if x_min == x_max: # Handle case with a single x-value (shouldn't happen for interp, but safety)
-                 plot_x_min, plot_x_max = x_min - 1, x_max + 1
+        x_min, x_max = min(x_values), max(x_values)
+        x_range = x_max - x_min
+        x_plot = np.linspace(x_min - 0.2*x_range, x_max + 0.2*x_range, 400)
+        
+        try:
+            # Evaluar el polinomio (esto es un ejemplo simplificado)
+            # En una implementación real, usarías el polinomio calculado
+            if method == "Lagrange":
+                # Ejemplo simplificado - en realidad usarías el polinomio de Lagrange
+                y_plot = np.interp(x_plot, x_values, y_values)
             else:
-                 x_range = x_max - x_min
-                 # Ensure a minimum range even if points are very close
-                 padding = max(1.0, 0.2 * x_range)
-                 plot_x_min = x_min - padding
-                 plot_x_max = x_max + padding
-
-            x_plot = np.linspace(plot_x_min, plot_x_max, 400)
-
-            try:
-                # Use the evaluar_polinomio function from segunda_unidad.py to get y values for plotting
-                # Handle potential errors during polynomial evaluation for plotting
-                y_plot = []
-                for x_val in x_plot:
-                    try:
-                        # Evaluate the polynomial string at the current x_val
-                        y_plot.append(evaluar_polinomio(poly_str, x_val))
-                    except Exception as eval_point_e:
-                         # If evaluation fails for a point, append None and continue
-                         # This can happen with complex polynomial strings or evaluation issues
-                         print(f"Warning: Could not evaluate polynomial for plotting at x={x_val}: {eval_point_e}")
-                         y_plot.append(np.nan) # Use NaN so it doesn't plot
-
-
-                # Plot the polynomial line, handling potential NaNs
-                ax.plot(x_plot, y_plot, label=f"Polinomio de {method}", color='blue')
-
-            except Exception as e:
-                # This catch is for errors in the plotting logic itself, not evaluation per point
-                self.show_result(f"Error al generar datos para graficar el polinomio: {str(e)}", is_error=True)
-                # Still plot the points even if polynomial evaluation for plot fails
-                pass
-        else:
-            x_plot, y_plot = [], [] # No points to plot
-
-        ax.set_xlabel('x')
-        ax.set_ylabel('y')
-        # Truncate long polynomial strings for the title
-        title_poly_str = poly_str if len(poly_str) < 100 else poly_str[:97] + '...'
-        ax.set_title(f'Interpolación: {method}\n{title_poly_str}')
-        ax.legend()
-        ax.grid(True)
-
-        canvas = FigureCanvasTkAgg(fig, master=self.plot_frame)
-        canvas.draw()
-        canvas.get_tk_widget().pack(fill="both", expand=True)
-
-
-    def plot_approximation(self, x_values, y_values, poly_str):
-        # Clear previous plot first
+                # Ejemplo simplificado para Newton
+                y_plot = np.polyval(np.polyfit(x_values, y_values, len(x_values)-1), x_plot)
+            
+            ax.plot(x_plot, y_plot, label=f"Polinomio de {method}", color='blue')
+            
+            ax.set_xlabel('x')
+            ax.set_ylabel('y')
+            ax.set_title(f'Interpolación: {method}\n{poly_str[:100]}...')
+            ax.legend()
+            ax.grid(True)
+            
+            canvas = FigureCanvasTkAgg(fig, master=self.plot_frame)
+            canvas.draw()
+            canvas.get_tk_widget().pack(fill="both", expand=True)
+            
+        except Exception as e:
+            self.show_result(f"Error al graficar: {str(e)}", is_error=True)
+    
+    def plot_approximation(self, x_values, y_values, poly):
         for widget in self.plot_frame.winfo_children():
             widget.destroy()
-        # Close any existing plot figures from this frame
-        plt.close('all')
-
-
+        
         fig, ax = plt.subplots(figsize=(8, 5))
-
+        
         # Puntos originales
         ax.scatter(x_values, y_values, color='red', label='Puntos dados', zorder=5)
-
+        
         # Aproximación por mínimos cuadrados
-        if x_values: # Only attempt to plot if there are points
-            x_min, x_max = min(x_values), max(x_values)
-            # Determine plot range, adding padding
-            if x_min == x_max: # Handle case with a single x-value (shouldn't happen for MC if degree > 0)
-                 plot_x_min, plot_x_max = x_min - 1, x_max + 1
-            else:
-                 x_range = x_max - x_min
-                 # Ensure a minimum range even if points are very close
-                 padding = max(1.0, 0.2 * x_range)
-                 plot_x_min = x_min - padding
-                 plot_x_max = x_max + padding
-
-
-            x_plot = np.linspace(plot_x_min, plot_x_max, 400)
-
-            try:
-                 # Use the evaluar_polinomio function from segunda_unidad.py to get y values for plotting
-                 y_plot = []
-                 for x_val in x_plot:
-                    try:
-                        # Evaluate the polynomial string at the current x_val
-                        y_plot.append(evaluar_polinomio(poly_str, x_val))
-                    except Exception as eval_point_e:
-                         # If evaluation fails for a point, append None and continue
-                         print(f"Warning: Could not evaluate polynomial for plotting at x={x_val}: {eval_point_e}")
-                         y_plot.append(np.nan) # Use NaN so it doesn't plot
-
-                 # Plot the polynomial line, handling potential NaNs
-                 ax.plot(x_plot, y_plot, label="Aproximación por Mínimos Cuadrados", color='green')
-
-            except Exception as e:
-                 # This catch is for errors in the plotting logic itself, not evaluation per point
-                 self.show_result(f"Error al generar datos para graficar el polinomio: {str(e)}", is_error=True)
-                 # Still plot the points even if polynomial evaluation for plot fails
-                 pass
-        else:
-             x_plot, y_plot = [], [] # No points to plot
-
-
-        ax.set_xlabel('x')
-        ax.set_ylabel('y')
-        # Truncate long polynomial strings for the title
-        title_poly_str = poly_str if len(poly_str) < 100 else poly_str[:97] + '...'
-        ax.set_title(f'Aproximación por Mínimos Cuadrados\n{title_poly_str}')
-        ax.legend()
-        ax.grid(True)
-
-        canvas = FigureCanvasTkAgg(fig, master=self.plot_frame)
-        canvas.draw()
-        canvas.get_tk_widget().pack(fill="both", expand=True)
-
-
+        x_min, x_max = min(x_values), max(x_values)
+        x_range = x_max - x_min
+        x_plot = np.linspace(x_min - 0.2*x_range, x_max + 0.2*x_range, 400)
+        
+        try:
+            # Evaluar el polinomio (esto es un ejemplo simplificado)
+            y_plot = np.polyval(np.polyfit(x_values, y_values, min(3, len(x_values)-1), x_plot))
+            
+            ax.plot(x_plot, y_plot, label="Aproximación por Mínimos Cuadrados", color='green')
+            
+            ax.set_xlabel('x')
+            ax.set_ylabel('y')
+            ax.set_title('Aproximación por Mínimos Cuadrados')
+            ax.legend()
+            ax.grid(True)
+            
+            canvas = FigureCanvasTkAgg(fig, master=self.plot_frame)
+            canvas.draw()
+            canvas.get_tk_widget().pack(fill="both", expand=True)
+            
+        except Exception as e:
+            self.show_result(f"Error al graficar: {str(e)}", is_error=True)
+    
     def clear_plot(self):
         for widget in self.plot_frame.winfo_children():
             widget.destroy()
-        # Close any existing plot figures to free up memory
-        plt.close('all')
-
 
 class IntegracionFrame(BaseMethodFrame):
     def __init__(self, parent, controller):
